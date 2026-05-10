@@ -27,8 +27,10 @@ export function createApp() {
   // Your code here
   const app = express()
   app.use(express.json())
-  const uploadsDir = path.join(__dirname, '../upload')
-  fs.mkdirSync(path.join(uploadsDir, 'thumbnails'))
+
+  const uploadsDir = path.join(__dirname, '../uploads');
+  fs.mkdirSync(path.join(uploadsDir, 'thumbnails'), { recursive: true });
+
   app.get('/health', (req, res) => {
     return res.json({ok: true})
   })
