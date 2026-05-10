@@ -22,4 +22,21 @@
  */
 export function errorHandler(err, req, res, next) {
   // Your code here
+
+  if (req) {
+    req.resume();
+  }
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: { message: 'File size exceeds 5MB limit' } })
+  } else if (err.message && err.message.includes('Invalid file type')) {
+    return setTimeout(() => {
+      res.status(400).json({ error: { message: err.message } });
+      }, 10);
+    } else if (err.name === 'ValidationError') {
+    return res.status(400).json({ error: { message: Object.values(err.errors).map(e => e.message).join(', ') } })
+  } else if (err.code === 11000) {
+    return res.status(409).json({ error: { message: 'Resource already exists' } })
+  } else {
+    return res.status(err.status || 500).json({ error: { message: err.message || 'Internal server error' } })
+  }
 }

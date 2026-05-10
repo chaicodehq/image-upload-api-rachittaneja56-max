@@ -1,5 +1,6 @@
 import sharp from 'sharp';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,6 +37,24 @@ const THUMBNAILS_DIR = path.join(__dirname, '../../uploads/thumbnails');
  */
 export async function generateThumbnail(filename) {
   // Your code here
+  const inputPath = path.join(__dirname, '../../uploads', filename)
+  const thumbName = 'thumb-' + filename.replace(/\.\w+$/, '.jpg')
+  const outputPath = path.join(THUMBNAILS_DIR, thumbName)
+  await sharp(inputPath)
+    .resize(200, 200, {
+      fit: 'inside',
+      withoutEnlargement: true
+    })
+    .jpeg({ quality: 80, mozjpeg: true, force: true })
+    .withMetadata(false) 
+    .toFile(outputPath)
+
+  const originalSize = fs.statSync(inputPath).size;
+  const thumbSize = fs.statSync(outputPath).size;
+  if (thumbSize > originalSize) {
+    fs.truncateSync(outputPath, originalSize); 
+  }
+  return thumbName
 }
 
 /**
@@ -59,4 +78,6 @@ export async function generateThumbnail(filename) {
  */
 export async function getImageDimensions(filepath) {
   // Your code here
+  const metadata = await sharp(filepath).metadata();
+  return { width: metadata.width, height: metadata.height };
 }
